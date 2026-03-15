@@ -48,5 +48,4 @@ export const Login = async ({email,password}:LoginParams)=>
 const GenerateJwt=(payload:any)=>
     {
         return jwt.sign(payload,'UWy0MjkRNqd07AJXPMRxFQQkbJUUcDsZN4vW9H4cYON' , {expiresIn: '24h'})
-        
     }    
