@@ -16,7 +16,6 @@ mongoose
 app.use('/user/',userRoute)
 app.use('/product/',productRouter)
 app.use('/cart/', cartRouter)
-
 app.listen(port, () => {
   console.log(`Port is listening to port 3000
 http://localhost:3000`);

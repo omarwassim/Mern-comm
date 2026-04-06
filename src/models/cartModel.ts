@@ -13,9 +13,11 @@ import type {IProduct}  from "./productModel.js";
 
 const StatusCartEnum =["active" , "Completed" ]
 
-export interface ICartItem extends Document
+
+// leh el ICartItem mesh extends men el document ? 3ashan heya mesh document saree7 heya bas tawseef lel info beta3t el Icart 
+export interface ICartItem 
 {
-    product:IProduct,
+    product:IProduct | string,
     quantity:number,
     unitPrice: number,
 
@@ -35,7 +37,7 @@ const cartItemSchema = new Schema<ICartItem>({
 });
 
 const CartSchema = new Schema<ICart>({
-    userId:{type:Schema.Types.ObjectId, ref:"Users" , required:true},
+    userId:{type:Schema.Types.ObjectId, ref:"Users" , },
     items:[cartItemSchema],
     TotalAmount:{type:Number, required:true},
     status:{type:String , enum:StatusCartEnum , default:"active" ,required:true}
