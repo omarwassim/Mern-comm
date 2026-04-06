@@ -22,6 +22,13 @@ interface Itemsprops
     quantity:number;
 }
 
+
+interface updateItemsprops
+{
+    productId:string,
+    userId:string,
+    quantity:number;
+}
 const CreateNewCart =async({userId}:NewCartProps)=>
     {
         const cart =await cartModel.create({userId , TotalAmount:0});  
@@ -71,4 +78,43 @@ export const addItemtoCart =async({productId,userId,quantity}:Itemsprops)=>
     }
 
 
-export default getActiveCartforuser    ;
+export default getActiveCartforuser ;
+
+
+
+export const UpdateItemCart=async({quantity, userId,productId}:updateItemsprops)=>
+    {
+        const cart = await getActiveCartforuser({userId});
+        const existInCart = cart.items.find((p) => p.product.toString() === productId);
+        if(!existInCart)
+            {
+                return {data:"the item is not found in the cart ",StatusCode:400}
+            }    
+
+        const product=await ProductModel.findById(productId)
+            if(!product)
+                {
+                    return {data:"the product is not exist in the stock" , StatusCode:404};
+                }
+            if(product.stock<quantity)
+                {
+                    return {data:"Low Stock for Item ",StatusCode:400};
+                } 
+    // how to calculate the cart items and you dont have anyinfo expect the product id that you want to update 
+    //you can calculate the otheritems and add it to the new item update 
+    existInCart.quantity=quantity;
+    //ya3ni men el a5er shouf kol eli fel cart ya3mel kam men 8eir el product eli ana meshwerlak 3alih
+    const otherItemsCart=cart.items.filter((p)=>p.product.toString()!==productId);
+
+    //delwa2ty 3ayz forloop telef 3ala montag montag te2oli howa et8ayar wala la2 w tezawedo 3ala el amount 
+
+    let total=otherItemsCart.reduce((sum,product)=>{
+        sum+=product.quantity*product.unitPrice;
+        return sum;
+    },0)
+
+    total+=existInCart.quantity*existInCart.unitPrice;
+    cart.TotalAmount=total;
+    const updatedCart=await cart.save();
+    return{data:updatedCart,StatusCode:200};
+    }
