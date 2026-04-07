@@ -15,7 +15,7 @@ interface ActiveCartProps
     status?:string;
 }
 
-interface Itemsprops
+interface addItemsprops
 {
     productId:string,
     userId:string,
@@ -29,6 +29,22 @@ interface updateItemsprops
     userId:string,
     quantity:number;
 }
+interface ClearItems
+{
+    userId:string;
+}
+
+
+export const ClearCartForUser=async ({userId}:ClearItems)=>
+    {
+        
+        const cart=await getActiveCartforuser({userId});
+        cart.items=[];
+        cart.TotalAmount=0;
+        const updatedCart=await cart.save();
+        return{data:updatedCart,StatusCode:200};
+    }
+
 const CreateNewCart =async({userId}:NewCartProps)=>
     {
         const cart =await cartModel.create({userId , TotalAmount:0});  
@@ -47,7 +63,7 @@ const getActiveCartforuser = async({userId}:ActiveCartProps)=>
     }   
 
 
-export const addItemtoCart =async({productId,userId,quantity}:Itemsprops)=> 
+export const addItemtoCart =async({productId,userId,quantity}:addItemsprops)=> 
     {
         //get the active cart for every user to push in it the item
         const cart = await getActiveCartforuser({userId});         
@@ -85,7 +101,7 @@ export default getActiveCartforuser ;
 export const UpdateItemCart=async({quantity, userId,productId}:updateItemsprops)=>
     {
         const cart = await getActiveCartforuser({userId});
-        const existInCart = cart.items.find((p) => p.product.toString() === productId);
+        const existInCart = cart.items.find((p) => String(p.product) === String(productId));
         if(!existInCart)
             {
                 return {data:"the item is not found in the cart ",StatusCode:400}
@@ -104,7 +120,7 @@ export const UpdateItemCart=async({quantity, userId,productId}:updateItemsprops)
     //you can calculate the otheritems and add it to the new item update 
     existInCart.quantity=quantity;
     //ya3ni men el a5er shouf kol eli fel cart ya3mel kam men 8eir el product eli ana meshwerlak 3alih
-    const otherItemsCart=cart.items.filter((p)=>p.product.toString()!==productId);
+    const otherItemsCart=cart.items.filter((p)=>String(p.product)!==String(productId));
 
     //delwa2ty 3ayz forloop telef 3ala montag montag te2oli howa et8ayar wala la2 w tezawedo 3ala el amount 
 
@@ -118,3 +134,35 @@ export const UpdateItemCart=async({quantity, userId,productId}:updateItemsprops)
     const updatedCart=await cart.save();
     return{data:updatedCart,StatusCode:200};
     }
+
+interface DeletedItems
+{
+    productId:any,
+    userId:string,
+}
+
+export const DeleteItemFromCart=async({productId,userId}:DeletedItems)=>
+{
+    const cart=await getActiveCartforuser({userId});
+    const existInCart = cart.items.find((p) => String(p.product) === String(productId));
+    if(!existInCart)
+        {
+            return {data:"the item is not found in the cart ",StatusCode:400}
+        } 
+    const product=await ProductModel.findById(productId)
+    if(!product)
+        {
+            return {data:"the product is not exist in the stock" , StatusCode:404};
+        }
+    const otherItemsCart=cart.items.filter((p)=>String(p.product)!==String(productId));
+    const total=otherItemsCart.reduce((sum,product)=>{
+        sum+=product.quantity*product.unitPrice;
+        return sum;
+    },0)
+    cart.items=otherItemsCart;
+    cart.TotalAmount=total;
+    const updatedCart=await cart.save();
+    return{data:updatedCart,StatusCode:200};
+
+}
+
