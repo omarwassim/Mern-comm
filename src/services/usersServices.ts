@@ -19,6 +19,7 @@ interface LoginParams
 export const Register= async ({firstName,lastName,email,password}:RegisterParams)=>
     {
         const findUser=await userModel.findOne({email});
+        
         if(findUser)
         {
             return{data:"the User already Exist !" , statusCode:400}

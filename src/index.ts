@@ -7,7 +7,6 @@ const app = express();
 const port = 3000;
 app.use(express.json());
 
-
 mongoose
   .connect("mongodb://localhost:27017/ecommerce")
   .then(() => console.log(`Mongo is connected`))

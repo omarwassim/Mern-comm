@@ -1,5 +1,5 @@
 import  express  from "express";
-import getActiveCartforuser, { addItemtoCart, ClearCartForUser, DeleteItemFromCart, UpdateItemCart } from "../services/cartService.js";
+import getActiveCartforuser, { addItemtoCart, checkout, ClearCartForUser, DeleteItemFromCart, UpdateItemCart } from "../services/cartService.js";
 import validatejwt from "../middlewares/validatejwt.js";
 import {type Extendsuser } from "../middlewares/validatejwt.js";
 const router=express.Router();
@@ -44,4 +44,14 @@ router.delete('/',validatejwt,async(req:Extendsuser,res)=>
         res.status(response.StatusCode).send(response.data);
 })
 
+router.post("/checkout", validatejwt, async (req: Extendsuser, res) => {
+  try {
+    const userId = req?.user?._id;
+    const { address } = req.body;
+    const response = await checkout({ userId, address });
+    res.status(response.statusCode).send(response.data);
+  } catch {
+    res.status(500).send("Something went wrong!");
+  }
+});
 export default router;    

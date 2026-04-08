@@ -2,6 +2,7 @@ import express from "express"
 import { cartModel } from "../models/cartModel.js";
 import type { get } from "mongoose";
 import { ProductModel } from "../models/productModel.js";
+import { orderModel, type IOrderItem } from "../models/orderModel.js";
 
 //make a cartfor the new user and a cart for the user make an completed order and want a new cart
 
@@ -165,4 +166,49 @@ export const DeleteItemFromCart=async({productId,userId}:DeletedItems)=>
     return{data:updatedCart,StatusCode:200};
 
 }
+interface Checkout {
+  userId: string;
+  address: string;
+}
+export const checkout = async ({ userId, address }: Checkout) => {
+  if (!address) {
+    return { data: "Please add the address", statusCode: 400 };
+  }
 
+  const cart = await getActiveCartforuser({ userId });
+
+  const orderItems: IOrderItem[] = [];
+
+  // Loop cartItems and create orderItems
+  for (const item of cart.items) {
+    const product = await ProductModel.findById(item.product);
+
+    if (!product) {
+      return { data: "Product not found", statusCode: 400 };
+    }
+
+    const orderItem: IOrderItem = {
+      productTitle: product.title,
+      productImage: product.image,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+    };
+
+    orderItems.push(orderItem);
+  }
+
+  const order = await orderModel.create({
+    orderItems,
+    total: cart.TotalAmount,
+    address,
+    userId,
+  });
+
+  await order.save();
+
+  // Update the cart status to be completed
+  cart.status = "Completed";
+  await cart.save();
+
+  return { data: order, statusCode: 200 };
+};
