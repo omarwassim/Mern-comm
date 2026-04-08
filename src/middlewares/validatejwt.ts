@@ -36,7 +36,7 @@ const validatejwt=(req:Extendsuser , res:Response , next:NextFunction)=>
                 return;
             }
         //second : after you check if the authorizationheader containes value , you have to verify the jwt returned by the user
-        jwt.verify(token,"UWy0MjkRNqd07AJXPMRxFQQkbJUUcDsZN4vW9H4cYON",async (err , payload)=>
+        jwt.verify(token,process.env.JWT_SECRET || '',async (err , payload)=>
             {
                 if(err)
                     {
